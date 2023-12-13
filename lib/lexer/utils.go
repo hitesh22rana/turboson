@@ -1,9 +1,17 @@
 package lexer
 
-import "strconv"
+import (
+	"regexp"
+	"strconv"
+)
+
+var (
+	numBoolNullRegex = regexp.MustCompile(`[\d\w]`)
+	spaceRegex       = regexp.MustCompile(`\s`)
+)
 
 func isNumber(value string) bool {
-	_, err := strconv.ParseInt(value, 10, 64)
+	_, err := strconv.ParseFloat(value, 64)
 	return err == nil
 }
 

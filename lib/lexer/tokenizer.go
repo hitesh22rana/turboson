@@ -1,70 +1,64 @@
 package lexer
 
 import (
-	"regexp"
-	"unicode"
-
-	internals "github.com/hitesh22rana/turboson/lib/internals"
+	"github.com/hitesh22rana/turboson/lib/internals"
 )
 
-func advance(index *int) {
+func next(index *uint) {
 	*index++
 }
 
-func Tokenizer(input string) []internals.Token {
+func Tokenize(input string) []internals.Token {
+	if len(input) == 0 {
+		panic("no input to tokenize")
+	}
+
 	var tokens []internals.Token
 
-	var length int = len(input)
-	var index int = 0
-
+	var length uint = uint(len(input))
+	var index uint = 0
 	for index < length {
 		var char byte = input[index]
 
 		// open braces check
 		if char == '{' {
 			tokens = append(tokens, internals.Token{Type: internals.BraceOpen, Value: "{"})
-			advance(&index)
-
+			next(&index)
 			continue
 		}
 
 		// close braces check
 		if char == '}' {
 			tokens = append(tokens, internals.Token{Type: internals.BraceClose, Value: "}"})
-			advance(&index)
-
+			next(&index)
 			continue
 		}
 
 		// open brackets check
 		if char == '[' {
 			tokens = append(tokens, internals.Token{Type: internals.BracketOpen, Value: "["})
-			advance(&index)
-
+			next(&index)
 			continue
 		}
 
 		// close brackets check
 		if char == ']' {
 			tokens = append(tokens, internals.Token{Type: internals.BracketClose, Value: "]"})
-			advance(&index)
-
+			next(&index)
 			continue
 		}
 
 		// colon check
 		if char == ':' {
 			tokens = append(tokens, internals.Token{Type: internals.Colon, Value: ":"})
-			advance(&index)
-
+			next(&index)
 			continue
 		}
 
 		// comma check
 		if char == ',' {
 			tokens = append(tokens, internals.Token{Type: internals.Comma, Value: ","})
-			advance(&index)
-
+			next(&index)
 			continue
 		}
 
@@ -72,26 +66,23 @@ func Tokenizer(input string) []internals.Token {
 		if char == '"' {
 			var value string = ""
 
-			advance(&index)
+			next(&index)
 			for index < length && input[index] != '"' {
 				value += string(input[index])
-				advance(&index)
+				next(&index)
 			}
 
+			next(&index)
 			tokens = append(tokens, internals.Token{Type: internals.String, Value: value})
-			advance(&index)
-
 			continue
 		}
 
 		// number, boolean, null check
-		if regexp.MustCompile(`[\d\w]`).MatchString(string(char)) {
+		if numBoolNullRegex.MatchString(string(char)) {
 			var value string = ""
-
-			for regexp.MustCompile(`[\d\w]`).MatchString(string(char)) {
-				value += string(char)
-				char = input[index+1]
-				advance(&index)
+			for numBoolNullRegex.MatchString(string(input[index])) {
+				value += string(input[index])
+				next(&index)
 			}
 
 			if isNumber(value) {
@@ -105,14 +96,12 @@ func Tokenizer(input string) []internals.Token {
 			} else {
 				panic("unexpected value: " + value)
 			}
-
 			continue
 		}
 
 		// skip whitespaces
-		if unicode.IsSpace(rune(char)) {
-			advance(&index)
-
+		if spaceRegex.MatchString(string(char)) {
+			next(&index)
 			continue
 		}
 
